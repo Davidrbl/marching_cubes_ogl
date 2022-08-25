@@ -96,131 +96,6 @@ int main(){
     float surface_value = 0.0;
 
     {
-        // //  get the sizes needed to store the stuff
-        // for (uint32_t z = 0; z < res; z++){
-        //     for (uint32_t y = 0; y < res; y++){
-        //         for (uint32_t x = 0; x < res; x++){
-        //             float pos_value = noise3d(x/res, y/res, z/res);
-        //             bool solid = pos_value > surface_value;
-        //             if (!solid) continue;
-        //             // it's solid
-        //             // the size of a cube = 8 vertices + 6 faces * 6 indices
-        //             mesh_vert_size += 3 * 8 * sizeof(float);
-        //             mesh_indices_size += 6 * 6 * sizeof(uint32_t);
-        //         }
-        //     }
-        // }
-
-        // mesh_vert_data = malloc(mesh_vert_size);
-        // mesh_indices_data = malloc(mesh_indices_size);
-
-        // uint32_t mesh_vert_index = 0;
-        // uint32_t mesh_indices_index = 0;
-
-        // for (uint32_t z = 0; z < res; z++){
-        //     for (uint32_t y = 0; y < res; y++){
-        //         for (uint32_t x = 0; x < res; x++){
-        //             float pos_value = noise3d(x/res, y/res, z/res);
-        //             bool solid = pos_value > surface_value;
-        //             if (!solid) continue;
-        //             // da bitch is solid
-
-        //             vec3 cube_pos = {
-        //                 (x + 0.5) / res,
-        //                 (y + 0.5) / res,
-        //                 (z + 0.5) / res
-        //             };
-
-        //             float cube_scale = 1/res;
-
-        //             uint32_t cube_vert_begin = mesh_vert_index/3;
-
-        //             #pragma unroll(2)
-        //             for (int8_t _z = 0; _z < 2; _z++){
-        //                 #pragma unroll(2)
-        //                 for (int8_t _y = 0; _y < 2; _y++){
-        //                     #pragma unroll(2)
-        //                     for (int8_t _x = 0; _x < 2; _x++){
-        //                         mesh_vert_data[mesh_vert_index++] = cube_pos[0] + (2 * _x - 1) * cube_scale;
-        //                         mesh_vert_data[mesh_vert_index++] = cube_pos[1] + (2 * _y - 1) * cube_scale;
-        //                         mesh_vert_data[mesh_vert_index++] = cube_pos[2] + (3 * _z - 1) * cube_scale;
-        //                     }  
-        //                 }   
-        //             }
-
-        //             // -z -y -x = 0
-        //             // -z -y +x = 1
-        //             // -z +y -x = 2
-        //             // -z +y +x = 3
-        //             // +z -y -x = 4
-        //             // +z -y +x = 5
-        //             // +z +y -x = 6
-        //             // +z +y +x = 7
-
-        //             // Face -Z
-        //             for (uint8_t i = 0; i < 2; i++){
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + 4 * i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 4 * i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 2 + 4 * i;
-
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 4 * i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 2 + 4 * i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 3 + 4 * i;
-        //             }
-        //             // Face +Z (-Z + 4)
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 4;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 5;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 6;
-
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 5;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 6;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 7;
-
-        //             // Face -Y
-        //             for (uint8_t i = 0; i < 2; i++){
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + 2 * i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 2 * i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 4 + 2 * i;
-
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 2 * i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 5 + 2 * i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 4 + 2 * i;
-        //             }
-        //             // Face +Y (-Y + 2)
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 2;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 3;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 6;
-
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 3;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 7;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 6;
-
-        //             // Face -X
-        //             for (uint8_t i = 0; i < 2; i++){
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 6 + i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 2 + i;
-
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 4 + i;
-        //                 mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 6 + i;
-        //             }
-        //             // Face +X (-X + 1)
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 7;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 3;
-
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 5;
-        //             // mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 7;
-        //         }
-        //     }
-        // }
-
-        // printf("mesh_vert_index = %u\nmesh_indices_index = %u\n", mesh_vert_index, mesh_indices_index);
-    }
-
-    {
         for (int8_t z = 0; z < res; z++){
             for (int8_t y = 0; y < res; y++){
                 for (int8_t x = 0; x < res; x++){
@@ -234,7 +109,7 @@ int main(){
                     if (!cube_show) continue;
                     
                     mesh_vert_size += 8 * 3 * sizeof(float);
-                    
+                    mesh_indices_size += 6 * 6 * sizeof(uint32_t);            
                 }
             }
         }
@@ -259,32 +134,74 @@ int main(){
                     bool cube_show = cur_value > surface_value;
                     if (!cube_show) continue;
 
+                    uint32_t cube_vert_begin = mesh_vert_index/3;
+
                     for (int8_t cz = 0; cz < 2; cz++){
                         for (int8_t cy = 0; cy < 2; cy++){
                             for (int8_t cx = 0; cx < 2; cx++){
                                 vec3 vert_offset = {
-                                    ((float)cx * 2.0 - 1.0) / res,
-                                    ((float)cy * 2.0 - 1.0) / res,
-                                    ((float)cz * 2.0 - 1.0) / res
+                                    ((float)cx * 2.0 - 1.0) / res / 2,
+                                    ((float)cy * 2.0 - 1.0) / res / 2,
+                                    ((float)cz * 2.0 - 1.0) / res / 2
                                 };
 
-                                printf("vert_offset --- cx : %hhd cy : %hhd cz : %hhd\n%f --- %f --- %f\n",
-                                    cx, cy, cz, 
-                                    vert_offset[0], vert_offset[1], vert_offset[2]    
-                                );
+                                // printf("cx: %hhu --- cy: %hhu --- cz: %hhu\nvert_offset: %f --- %f --- %f\n",
+                                //     cx, cy, cz,
+                                //     vert_offset[0], vert_offset[1], vert_offset[2] 
+                                // );
 
                                 mesh_vert_data[mesh_vert_index++] = cube_pos[0] + vert_offset[0];
                                 mesh_vert_data[mesh_vert_index++] = cube_pos[1] + vert_offset[1];
                                 mesh_vert_data[mesh_vert_index++] = cube_pos[2] + vert_offset[2];
                             }
                         }
-                   }
+                    }
 
+                    // -z -y -x = 0
+                    // -z -y +x = 1
+                    // -z +y -x = 2
+                    // -z +y +x = 3
+                    // +z -y -x = 4
+                    // +z -y +x = 5
+                    // +z +y -x = 6
+                    // +z +y +x = 7
 
-                    // mesh_vert_data[mesh_vert_index++] = cube_pos[0];
-                    // mesh_vert_data[mesh_vert_index++] = cube_pos[1];
-                    // mesh_vert_data[mesh_vert_index++] = cube_pos[2];
-                
+                    // Face -Z
+                    // Face +Z (-Z + 4)
+                    for (uint8_t i = 0; i < 2; i++){
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + 4 * i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 4 * i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 2 + 4 * i;
+
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 4 * i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 2 + 4 * i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 3 + 4 * i;
+                    }
+
+                    // Face -Y
+                    // Face +Y (-Y + 2)
+                    for (uint8_t i = 0; i < 2; i++){
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + 2 * i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 2 * i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 4 + 2 * i;
+
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 2 * i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 5 + 2 * i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 4 + 2 * i;
+                    }
+
+                    // Face -X
+                    // Face +X (-X + 1)
+                    for (uint8_t i = 0; i < 2; i++){
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 6 + i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 2 + i;
+
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 4 + i;
+                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 6 + i;
+                    }
+               
                 }
             }
         }
@@ -411,8 +328,8 @@ int main(){
         glUniformMatrix4fv(glGetUniformLocation(main_program, "view"), 1, GL_FALSE, &view_matrix[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(main_program, "projection"), 1, GL_FALSE, &projection_matrix[0][0]);
 
-        // glDrawElements(GL_TRIANGLES, mesh_indices_size/sizeof(uint32_t), GL_UNSIGNED_INT, NULL);
-        glDrawArrays(GL_POINTS, 0, mesh_vert_size/3/sizeof(float));
+        glDrawElements(GL_TRIANGLES, mesh_indices_size/sizeof(uint32_t), GL_UNSIGNED_INT, NULL);
+        // glDrawArrays(GL_POINTS, 0, mesh_vert_size/3/sizeof(float));
 
         end_frame_time = glfwGetTime();
         glfwSwapBuffers(window);
