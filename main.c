@@ -57,7 +57,7 @@ int main(){
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
@@ -92,7 +92,7 @@ int main(){
     uint32_t* mesh_indices_data = NULL;
     uint32_t mesh_indices_size = 0;
 
-    uint32_t res = 3;
+    uint32_t res = 5;
     float surface_value = 0.0;
 
     {
@@ -105,7 +105,7 @@ int main(){
                         (z + 0.5) / res
                     };
                     float cur_value = noise3d(cube_pos[0], cube_pos[1], cube_pos[2]);
-                    bool cube_show = cur_value > surface_value;
+                    bool cube_show = ((x + y + z) % 2 == 0);//cur_value > surface_value;
                     if (!cube_show) continue;
                     
                     mesh_vert_size += 8 * 3 * sizeof(float);
@@ -131,7 +131,8 @@ int main(){
                         (z + 0.5) / res
                     };
                     float cur_value = noise3d(cube_pos[0], cube_pos[1], cube_pos[2]);
-                    bool cube_show = cur_value > surface_value;
+                    // bool cube_show = cur_value > surface_value;
+                    bool cube_show = ((x + y + z) % 2 == 0);//cur_value > surface_value;
                     if (!cube_show) continue;
 
                     uint32_t cube_vert_begin = mesh_vert_index/3;
@@ -140,9 +141,9 @@ int main(){
                         for (int8_t cy = 0; cy < 2; cy++){
                             for (int8_t cx = 0; cx < 2; cx++){
                                 vec3 vert_offset = {
-                                    ((float)cx * 2.0 - 1.0) / res / 2,
-                                    ((float)cy * 2.0 - 1.0) / res / 2,
-                                    ((float)cz * 2.0 - 1.0) / res / 2
+                                    ((float)cx - 0.5) / res, // -0.5 so it's from 0 to 1 to -0.5 to 0.5
+                                    ((float)cy - 0.5) / res,
+                                    ((float)cz - 0.5) / res
                                 };
 
                                 // printf("cx: %hhu --- cy: %hhu --- cz: %hhu\nvert_offset: %f --- %f --- %f\n",
@@ -169,37 +170,50 @@ int main(){
                     // Face -Z
                     // Face +Z (-Z + 4)
                     for (uint8_t i = 0; i < 2; i++){
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + 4 * i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 4 * i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 2 + 4 * i;
+                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 0 + 4 * i;
+                        // ^ this one's different from the other ones, it works, idk why this one needs to be different
+                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 1 + 4 * i;
+                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 2 + 4 * i;
 
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 4 * i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 2 + 4 * i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 3 + 4 * i;
+                        mesh_indices_index += 3;
+
+                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 1 + 4 * i;
+                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 2 + 4 * i;
+                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 3 + 4 * i;
+
+                        mesh_indices_index += 3;
                     }
 
                     // Face -Y
                     // Face +Y (-Y + 2)
                     for (uint8_t i = 0; i < 2; i++){
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + 2 * i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 2 * i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 4 + 2 * i;
+                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 0 + 2 * i;
+                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 1 + 2 * i;
+                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 4 + 2 * i;
 
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 1 + 2 * i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 5 + 2 * i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 4 + 2 * i;
+                        mesh_indices_index += 3;
+
+                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 1 + 2 * i;
+                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 5 + 2 * i;
+                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 4 + 2 * i;
+
+                        mesh_indices_index += 3;
                     }
 
                     // Face -X
                     // Face +X (-X + 1)
                     for (uint8_t i = 0; i < 2; i++){
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 6 + i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 2 + i;
+                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 0 + i;
+                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 6 + i;
+                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 2 + i;
 
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 0 + i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 4 + i;
-                        mesh_indices_data[mesh_indices_index++] = cube_vert_begin + 6 + i;
+                        mesh_indices_index += 3;
+
+                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 0 + i;
+                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 4 + i;
+                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 6 + i;
+
+                        mesh_indices_index += 3;
                     }
                
                 }
