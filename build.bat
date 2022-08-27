@@ -1,8 +1,8 @@
-gcc shader.c -c -o shader.o
+::gcc shader.c -O2 -c -o shader.o
 
-gcc gl.c -c -o gl.o
+::gcc gl.c -O2 -c -o gl.o
 
-gcc main.c -c -o main.o
+gcc main.c -O2 -c -o main.o
 
 gcc ^
 shader.o ^

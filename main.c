@@ -8,15 +8,14 @@
 #include "shader.h"
 #include "cglm/call.h"
 
+// i dont see people do this often, but lets see what happens
+#include "voxel_mesh_gen.c"
+
 #define MOUSE_SENSITIVITY 0.001
 #define CAMERA_SPEED 1.0
 
 static void glfw_error_callback(int error, const char* desc){
     printf("GLFW_ERROR: %d ---\t %s\n", error, desc);
-}
-
-static inline float noise3d(float x, float y, float z){
-    return 1.0;
 }
 
 int main(){
@@ -29,7 +28,7 @@ int main(){
 
     uint32_t window_width = 1024, window_height = 1024;
 
-    GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Cock and balls", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Window", NULL, NULL);
 
     if (!window){
         printf("create window fail!\n");
@@ -70,32 +69,27 @@ int main(){
     mat4 view_matrix = GLM_MAT4_IDENTITY_INIT;
     mat4 projection_matrix = GLM_MAT4_IDENTITY_INIT;
 
-    // Generate the mesh
-    // float mesh_vert_data[] = {
-    //     0.0, 0.0, 0.0,
-    //     0.0, 1.0, 0.0,
-    //     1.0, 0.0, 0.0,
-    //     1.0, 1.0, 0.0
-    // };
-
-    // uint32_t mesh_vert_size = sizeof(mesh_vert_data);
-
-    // uint32_t mesh_indices_data[] = {
-    //     0, 2, 1,
-    //     1, 2, 3
-    // };
-
-    // uint32_t mesh_indices_size = sizeof(mesh_indices_data);
-
     float* mesh_vert_data = NULL;
     uint32_t mesh_vert_size = 0;
     uint32_t* mesh_indices_data = NULL;
     uint32_t mesh_indices_size = 0;
 
-    uint32_t res = 5;
+    uint32_t res = 30;
     float surface_value = 0.0;
 
+    gen_voxel_mesh(
+        &mesh_vert_data, &mesh_vert_size,
+        &mesh_indices_data, &mesh_indices_size,
+        res
+    );
+
+
+
+    /*
     {
+
+        bool cube_show_map[res][res][res];
+
         for (int8_t z = 0; z < res; z++){
             for (int8_t y = 0; y < res; y++){
                 for (int8_t x = 0; x < res; x++){
@@ -105,7 +99,8 @@ int main(){
                         (z + 0.5) / res
                     };
                     float cur_value = noise3d(cube_pos[0], cube_pos[1], cube_pos[2]);
-                    bool cube_show = ((x + y + z) % 2 == 0);//cur_value > surface_value;
+                    bool cube_show = cur_value > surface_value;
+                    cube_show_map[z][y][x] = cube_show;
                     if (!cube_show) continue;
                     
                     mesh_vert_size += 8 * 3 * sizeof(float);
@@ -130,9 +125,8 @@ int main(){
                         (y + 0.5) / res,
                         (z + 0.5) / res
                     };
-                    float cur_value = noise3d(cube_pos[0], cube_pos[1], cube_pos[2]);
-                    // bool cube_show = cur_value > surface_value;
-                    bool cube_show = ((x + y + z) % 2 == 0);//cur_value > surface_value;
+
+                    bool cube_show = cube_show_map[z][y][x];
                     if (!cube_show) continue;
 
                     uint32_t cube_vert_begin = mesh_vert_index/3;
@@ -145,11 +139,6 @@ int main(){
                                     ((float)cy - 0.5) / res,
                                     ((float)cz - 0.5) / res
                                 };
-
-                                // printf("cx: %hhu --- cy: %hhu --- cz: %hhu\nvert_offset: %f --- %f --- %f\n",
-                                //     cx, cy, cz,
-                                //     vert_offset[0], vert_offset[1], vert_offset[2] 
-                                // );
 
                                 mesh_vert_data[mesh_vert_index++] = cube_pos[0] + vert_offset[0];
                                 mesh_vert_data[mesh_vert_index++] = cube_pos[1] + vert_offset[1];
@@ -167,9 +156,17 @@ int main(){
                     // +z +y -x = 6
                     // +z +y +x = 7
 
+                    bool create_face[2];
+
+                    create_face[0] = !cube_show_map[z-1][y][x];     // Should -Z show?
+                    create_face[1] = !cube_show_map[z+1][y][x];     // Should +Z show?
+
                     // Face -Z
                     // Face +Z (-Z + 4)
+
                     for (uint8_t i = 0; i < 2; i++){
+                        if (!create_face[i]) continue;
+
                         mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 0 + 4 * i;
                         // ^ this one's different from the other ones, it works, idk why this one needs to be different
                         mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 1 + 4 * i;
@@ -184,9 +181,14 @@ int main(){
                         mesh_indices_index += 3;
                     }
 
+                    create_face[0] = !cube_show_map[z][y-1][x];     // Should -Y show?
+                    create_face[1] = !cube_show_map[z][y+1][x];     // Should +Y show?
+
                     // Face -Y
                     // Face +Y (-Y + 2)
                     for (uint8_t i = 0; i < 2; i++){
+                        if (!create_face[i]) continue;
+
                         mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 0 + 2 * i;
                         mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 1 + 2 * i;
                         mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 4 + 2 * i;
@@ -200,9 +202,14 @@ int main(){
                         mesh_indices_index += 3;
                     }
 
+                    create_face[0] = !cube_show_map[z][y][x-1];     // Should -X show?
+                    create_face[1] = !cube_show_map[z][y][x+1];     // Should +X show?
+
                     // Face -X
                     // Face +X (-X + 1)
                     for (uint8_t i = 0; i < 2; i++){
+                        if (!create_face[i]) continue;
+
                         mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 0 + i;
                         mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 6 + i;
                         mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 2 + i;
@@ -220,8 +227,11 @@ int main(){
             }
         }
 
+        mesh_indices_size = mesh_indices_index * sizeof(uint32_t);
+        mesh_indices_data = realloc(mesh_indices_data, mesh_indices_size);
 
     }
+    */
 
     printf("mesh_vert_size = %u\nmesh_indices_size = %u\n", mesh_vert_size/sizeof(float), mesh_indices_size/sizeof(uint32_t));    
 
@@ -333,7 +343,7 @@ int main(){
         glm_mat4_identity(projection_matrix);
 
         glm_look(cam_pos, cam_fwd, (vec3){0.0, 1.0, 0.0}, view_matrix);
-        glm_perspective(fov, window_width/window_height, 0.1, 100.0, projection_matrix);
+        glm_perspective(fov, window_width/window_height, 0.001, 100.0, projection_matrix);
 
         glUseProgram(main_program);
         glBindVertexArray(VAO);
