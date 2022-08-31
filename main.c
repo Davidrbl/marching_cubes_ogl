@@ -8,11 +8,28 @@
 #include "shader.h"
 #include "cglm/call.h"
 
+static inline float noise3d(float x, float y, float z){
+    x = x * 2 - 1;
+    y = y * 2 - 1;
+    z = z * 2 - 1;
+
+    float d = sqrtf(x*x + y*y + z*z) / sqrtf(2);
+    d = 1.0 - d;
+    d = d * 2 - 1;
+
+    return d;
+
+}
 // i dont see people do this often, but lets see what happens
 #include "voxel_mesh_gen.c"
+#include "marching_cubes_mesh_gen.c"
 
 #define MOUSE_SENSITIVITY 0.001
 #define CAMERA_SPEED 1.0
+
+
+
+
 
 static void glfw_error_callback(int error, const char* desc){
     printf("GLFW_ERROR: %d ---\t %s\n", error, desc);
@@ -56,7 +73,7 @@ int main(){
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
@@ -74,10 +91,16 @@ int main(){
     uint32_t* mesh_indices_data = NULL;
     uint32_t mesh_indices_size = 0;
 
-    uint32_t res = 30;
+    uint32_t res = 10;
     float surface_value = 0.0;
 
-    gen_voxel_mesh(
+    // gen_voxel_mesh(
+    //     &mesh_vert_data, &mesh_vert_size,
+    //     &mesh_indices_data, &mesh_indices_size,
+    //     res
+    // );
+
+    gen_marching_cubes_mesh(
         &mesh_vert_data, &mesh_vert_size,
         &mesh_indices_data, &mesh_indices_size,
         res
@@ -233,7 +256,7 @@ int main(){
     }
     */
 
-    printf("mesh_vert_size = %u\nmesh_indices_size = %u\n", mesh_vert_size/sizeof(float), mesh_indices_size/sizeof(uint32_t));    
+    printf("mesh_vert_size/sizeof(float) = %u\nmesh_indices_size/sizeof(uint32_t) = %u\n", mesh_vert_size/sizeof(float), mesh_indices_size/sizeof(uint32_t));    
 
     // the stupid gpu objects
     uint32_t VAO, VBO, EBO;
@@ -298,6 +321,14 @@ int main(){
                 v[0], v[1], v[2], v[3]
             );
         }
+        if (glfwGetKey(window, GLFW_KEY_B)) {
+            for (uint32_t i = 0; i < mesh_vert_size/3/sizeof(float); i++){
+                printf("vert %u\t%f --- %f --- %f\n", i,
+                    mesh_vert_data[i*3+0], mesh_vert_data[i*3+1], mesh_vert_data[i*3+2] 
+                );
+            }
+            printf("\n");
+        }
         if (glfwGetKey(window, GLFW_KEY_1)) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         if (glfwGetKey(window, GLFW_KEY_2)) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -353,6 +384,7 @@ int main(){
         glUniformMatrix4fv(glGetUniformLocation(main_program, "projection"), 1, GL_FALSE, &projection_matrix[0][0]);
 
         glDrawElements(GL_TRIANGLES, mesh_indices_size/sizeof(uint32_t), GL_UNSIGNED_INT, NULL);
+        glDrawArrays(GL_TRIANGLES, 0, mesh_vert_size/3/sizeof(float));
         // glDrawArrays(GL_POINTS, 0, mesh_vert_size/3/sizeof(float));
 
         end_frame_time = glfwGetTime();
