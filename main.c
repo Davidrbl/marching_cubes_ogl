@@ -20,16 +20,18 @@ static inline float noise3d(float x, float y, float z){
     return d;
 
 }
+
+// #include "noise.h"
+#include "new_noise.h"
+
 // i dont see people do this often, but lets see what happens
 #include "voxel_mesh_gen.c"
 #include "marching_cubes_mesh_gen.c"
 
+#include "bmp_imp.c"
+
 #define MOUSE_SENSITIVITY 0.001
 #define CAMERA_SPEED 1.0
-
-
-
-
 
 static void glfw_error_callback(int error, const char* desc){
     printf("GLFW_ERROR: %d ---\t %s\n", error, desc);
@@ -73,7 +75,7 @@ int main(){
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
@@ -86,12 +88,88 @@ int main(){
     mat4 view_matrix = GLM_MAT4_IDENTITY_INIT;
     mat4 projection_matrix = GLM_MAT4_IDENTITY_INIT;
 
+    const char* addresses[] = {
+        "ct/i36.bmp",
+        "ct/i37.bmp",
+        "ct/i38.bmp",
+        "ct/i39.bmp",
+        "ct/i40.bmp",
+        "ct/i41.bmp",
+        "ct/i42.bmp",
+        "ct/i43.bmp",
+        "ct/i44.bmp",
+        "ct/i45.bmp",
+        "ct/i46.bmp",
+        "ct/i47.bmp",
+        "ct/i48.bmp",
+        "ct/i49.bmp",
+        "ct/i50.bmp",
+        "ct/i51.bmp",
+        "ct/i52.bmp",
+        "ct/i53.bmp",
+        "ct/i54.bmp",
+        "ct/i55.bmp",
+        "ct/i56.bmp",
+        "ct/i57.bmp",
+        "ct/i58.bmp",
+        "ct/i59.bmp",
+        "ct/i60.bmp",
+        "ct/i61.bmp",
+        "ct/i62.bmp",
+        "ct/i63.bmp",
+        "ct/i64.bmp",
+        "ct/i65.bmp",
+        "ct/i66.bmp",
+        "ct/i67.bmp",
+        "ct/i68.bmp",
+        "ct/i69.bmp",
+        "ct/i70.bmp",
+        "ct/i71.bmp",
+        "ct/i72.bmp",
+        "ct/i73.bmp",
+        "ct/i74.bmp",
+        "ct/i75.bmp",
+        "ct/i76.bmp",
+        "ct/i77.bmp",
+        "ct/i78.bmp",
+        "ct/i79.bmp",
+        "ct/i80.bmp",
+        "ct/i81.bmp",
+        "ct/i82.bmp",
+        "ct/i83.bmp",
+        "ct/i84.bmp",
+        "ct/i85.bmp",
+        "ct/i86.bmp",
+        "ct/i87.bmp",
+        "ct/i88.bmp",
+        "ct/i89.bmp",
+        "ct/i90.bmp",
+        "ct/i91.bmp",
+        "ct/i92.bmp",
+        "ct/i93.bmp",
+        "ct/i94.bmp",
+        "ct/i95.bmp",
+        "ct/i96.bmp",
+        "ct/i97.bmp",
+        "ct/i98.bmp",
+        "ct/i99.bmp",
+        "ct/i100.bmp",
+        "ct/i101.bmp",
+        "ct/i102.bmp"
+    };
+
+    uint32_t num_addresses = sizeof(addresses)/sizeof(char*);
+
+    uint8_t* bitmap_data = NULL;
+    bmp_load(addresses, num_addresses, &bitmap_data);
+    printf("Loaded bmp succesfully!\n");
+
     float* mesh_vert_data = NULL;
     uint32_t mesh_vert_size = 0;
     uint32_t* mesh_indices_data = NULL;
     uint32_t mesh_indices_size = 0;
 
-    uint32_t res = 10;
+    uint32_t res = 100;
     float surface_value = 0.0;
 
     // gen_voxel_mesh(
@@ -100,161 +178,15 @@ int main(){
     //     res
     // );
 
+    double before_gen_time = glfwGetTime();
+
     gen_marching_cubes_mesh(
         &mesh_vert_data, &mesh_vert_size,
         &mesh_indices_data, &mesh_indices_size,
         res
     );
 
-
-
-    /*
-    {
-
-        bool cube_show_map[res][res][res];
-
-        for (int8_t z = 0; z < res; z++){
-            for (int8_t y = 0; y < res; y++){
-                for (int8_t x = 0; x < res; x++){
-                    vec3 cube_pos = {
-                        (x + 0.5) / res,
-                        (y + 0.5) / res,
-                        (z + 0.5) / res
-                    };
-                    float cur_value = noise3d(cube_pos[0], cube_pos[1], cube_pos[2]);
-                    bool cube_show = cur_value > surface_value;
-                    cube_show_map[z][y][x] = cube_show;
-                    if (!cube_show) continue;
-                    
-                    mesh_vert_size += 8 * 3 * sizeof(float);
-                    mesh_indices_size += 6 * 6 * sizeof(uint32_t);            
-                }
-            }
-        }
-
-        mesh_vert_data = malloc(mesh_vert_size);
-        mesh_indices_data = malloc(mesh_indices_size);
-
-        uint32_t mesh_vert_index = 0;
-        uint32_t mesh_indices_index = 0;
-
-        // now the actual vertex and index calculations
-
-        for (int8_t z = 0; z < res; z++){
-            for (int8_t y = 0; y < res; y++){
-                for (int8_t x = 0; x < res; x++){
-                    vec3 cube_pos = {
-                        (x + 0.5) / res,
-                        (y + 0.5) / res,
-                        (z + 0.5) / res
-                    };
-
-                    bool cube_show = cube_show_map[z][y][x];
-                    if (!cube_show) continue;
-
-                    uint32_t cube_vert_begin = mesh_vert_index/3;
-
-                    for (int8_t cz = 0; cz < 2; cz++){
-                        for (int8_t cy = 0; cy < 2; cy++){
-                            for (int8_t cx = 0; cx < 2; cx++){
-                                vec3 vert_offset = {
-                                    ((float)cx - 0.5) / res, // -0.5 so it's from 0 to 1 to -0.5 to 0.5
-                                    ((float)cy - 0.5) / res,
-                                    ((float)cz - 0.5) / res
-                                };
-
-                                mesh_vert_data[mesh_vert_index++] = cube_pos[0] + vert_offset[0];
-                                mesh_vert_data[mesh_vert_index++] = cube_pos[1] + vert_offset[1];
-                                mesh_vert_data[mesh_vert_index++] = cube_pos[2] + vert_offset[2];
-                            }
-                        }
-                    }
-
-                    // -z -y -x = 0
-                    // -z -y +x = 1
-                    // -z +y -x = 2
-                    // -z +y +x = 3
-                    // +z -y -x = 4
-                    // +z -y +x = 5
-                    // +z +y -x = 6
-                    // +z +y +x = 7
-
-                    bool create_face[2];
-
-                    create_face[0] = !cube_show_map[z-1][y][x];     // Should -Z show?
-                    create_face[1] = !cube_show_map[z+1][y][x];     // Should +Z show?
-
-                    // Face -Z
-                    // Face +Z (-Z + 4)
-
-                    for (uint8_t i = 0; i < 2; i++){
-                        if (!create_face[i]) continue;
-
-                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 0 + 4 * i;
-                        // ^ this one's different from the other ones, it works, idk why this one needs to be different
-                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 1 + 4 * i;
-                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 2 + 4 * i;
-
-                        mesh_indices_index += 3;
-
-                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 1 + 4 * i;
-                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 2 + 4 * i;
-                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 3 + 4 * i;
-
-                        mesh_indices_index += 3;
-                    }
-
-                    create_face[0] = !cube_show_map[z][y-1][x];     // Should -Y show?
-                    create_face[1] = !cube_show_map[z][y+1][x];     // Should +Y show?
-
-                    // Face -Y
-                    // Face +Y (-Y + 2)
-                    for (uint8_t i = 0; i < 2; i++){
-                        if (!create_face[i]) continue;
-
-                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 0 + 2 * i;
-                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 1 + 2 * i;
-                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 4 + 2 * i;
-
-                        mesh_indices_index += 3;
-
-                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 1 + 2 * i;
-                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 5 + 2 * i;
-                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 4 + 2 * i;
-
-                        mesh_indices_index += 3;
-                    }
-
-                    create_face[0] = !cube_show_map[z][y][x-1];     // Should -X show?
-                    create_face[1] = !cube_show_map[z][y][x+1];     // Should +X show?
-
-                    // Face -X
-                    // Face +X (-X + 1)
-                    for (uint8_t i = 0; i < 2; i++){
-                        if (!create_face[i]) continue;
-
-                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 0 + i;
-                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 6 + i;
-                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 2 + i;
-
-                        mesh_indices_index += 3;
-
-                        mesh_indices_data[mesh_indices_index + i]       = cube_vert_begin + 0 + i;
-                        mesh_indices_data[mesh_indices_index + (1 - i)] = cube_vert_begin + 4 + i;
-                        mesh_indices_data[mesh_indices_index + 2]       = cube_vert_begin + 6 + i;
-
-                        mesh_indices_index += 3;
-                    }
-               
-                }
-            }
-        }
-
-        mesh_indices_size = mesh_indices_index * sizeof(uint32_t);
-        mesh_indices_data = realloc(mesh_indices_data, mesh_indices_size);
-
-    }
-    */
+    printf("Generating mesh took %f s\n", glfwGetTime() - before_gen_time);
 
     printf("mesh_vert_size/sizeof(float) = %u\nmesh_indices_size/sizeof(uint32_t) = %u\n", mesh_vert_size/sizeof(float), mesh_indices_size/sizeof(uint32_t));    
 
@@ -282,7 +214,7 @@ int main(){
     glVertexArrayVertexBuffer(VAO, 0, VBO, 0, 3*sizeof(float));
     glVertexArrayElementBuffer(VAO, EBO);
 
-    vec3 cam_pos = {0.0, 0.0, 1.0};
+    vec3 cam_pos = {0.0, 0.0, 0.0};
     vec2 cam_rot = {0.0, 0.0}; // Pitch --- Yaw
     vec3 cam_fwd = GLM_VEC3_ZERO_INIT;
 
@@ -293,7 +225,7 @@ int main(){
     double mouse_y;
     glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
-    float camera_speed = 1.0;
+    float camera_speed = 0.02;
     float mouse_sensitivity = 0.001;
     float fov = GLM_PI_2f;
 
@@ -373,6 +305,7 @@ int main(){
         glm_mat4_identity(view_matrix);
         glm_mat4_identity(projection_matrix);
 
+        // glm_scale_uni(model_matrix, 10.0f);
         glm_look(cam_pos, cam_fwd, (vec3){0.0, 1.0, 0.0}, view_matrix);
         glm_perspective(fov, window_width/window_height, 0.001, 100.0, projection_matrix);
 
@@ -385,7 +318,6 @@ int main(){
 
         glDrawElements(GL_TRIANGLES, mesh_indices_size/sizeof(uint32_t), GL_UNSIGNED_INT, NULL);
         glDrawArrays(GL_TRIANGLES, 0, mesh_vert_size/3/sizeof(float));
-        // glDrawArrays(GL_POINTS, 0, mesh_vert_size/3/sizeof(float));
 
         end_frame_time = glfwGetTime();
         glfwSwapBuffers(window);

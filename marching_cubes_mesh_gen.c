@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+// from http://paulbourke.net/geometry/polygonise/ also algorithm explanation there
+
 int8_t tri_table[256][16] =
 {{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -260,15 +262,15 @@ int8_t tri_table[256][16] =
 {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
-float lerp(float a, float b, float x){
-    return a + (b-a)*x;
-}
+// float lerp(float a, float b, float x){
+//     return a + (b-a)*x;
+// }
 
-void vec3_lerp_to(vec3 a, vec3 b, float x, vec3 to){
-    to[0] = lerp(a[0], b[0], x);
-    to[1] = lerp(a[1], b[1], x);
-    to[2] = lerp(a[2], b[2], x);
-}
+// void vec3_lerp_to(vec3 a, vec3 b, float x, vec3 to){
+//     to[0] = lerp(a[0], b[0], x);
+//     to[1] = lerp(a[1], b[1], x);
+//     to[2] = lerp(a[2], b[2], x);
+// }
 
 void gen_marching_cubes_mesh(
     float** mesh_vert_data,
@@ -285,10 +287,10 @@ void gen_marching_cubes_mesh(
     for (uint32_t z = 0; z <= res; z++){
         for (uint32_t y = 0; y <= res; y++){
             for (uint32_t x = 0; x <= res; x++){
-                // float cur_value = noise3d(x, y, z);
-                // bool solid = cur_value > surface_value;
-                bool solid = (x + y + z) % 2 == 0;
-                solid_map[z][y][x] = solid;
+                // bool solid = rand() % 2 == 0;
+                bool solid = y < 3;
+                if (x == 0 || x == res || y == 0 || y == res || z == 0 || z == res) solid = false;
+                solid_map[y][z][x] = solid;
 
             }
         }
@@ -302,27 +304,20 @@ void gen_marching_cubes_mesh(
             for (uint32_t x = 0; x < res; x++){
                 bool edge_solid[8] = {
                     solid_map[z+0][y+0][x+0],
-                    solid_map[z+0][y+0][x+1],
-                    solid_map[z+1][y+0][x+1],
                     solid_map[z+1][y+0][x+0],
+                    solid_map[z+1][y+0][x+1],
+                    solid_map[z+0][y+0][x+1],
                     solid_map[z+0][y+1][x+0],
-                    solid_map[z+0][y+1][x+1],
+                    solid_map[z+1][y+1][x+0],
                     solid_map[z+1][y+1][x+1], 
-                    solid_map[z+1][y+1][x+0] 
+                    solid_map[z+0][y+1][x+1] 
                 }; 
-
-                // printf("edge_solid:\t %hhu\t %hhu\t %hhu\t %hhu\t %hhu\t %hhu\t %hhu\t %hhu\n",
-                //     edge_solid[0], edge_solid[1], edge_solid[2], edge_solid[3], 
-                //     edge_solid[4], edge_solid[5], edge_solid[6], edge_solid[7] 
-                // );
 
                 uint32_t index = 0;
 
                 for (uint8_t i = 0; i < 8; i++){
                     index |= edge_solid[i] << i;
                 }
-
-                printf("index: %hhu\n", index);
 
                 vec3 cube_pos = {
                     (x + 0.5) / res,
@@ -359,20 +354,13 @@ void gen_marching_cubes_mesh(
                 glm_vec3_lerp(cube_vert_offsets[2], cube_vert_offsets[6], 0.5, cube_edge_pos[10]);
                 glm_vec3_lerp(cube_vert_offsets[3], cube_vert_offsets[7], 0.5, cube_edge_pos[11]);
 
-                // for (uint32_t i = 0; i < 12; i++){
-                //     printf("cube_edge_pos[%u]: %f --- %f --- %f\n", i,
-                //         cube_edge_pos[i][0], cube_edge_pos[i][1], cube_edge_pos[i][2] 
-                //     );
-                // }
-
                 // now we need to assemble a certain ammount of vertices and indices 
                 // depending on the indices retrieved from the tri_table
 
-                int8_t connections[16];// = tri_table[index];
+                int8_t connections[16];
 
                 for (uint8_t i = 0; i < 16; i++){
                     connections[i] = tri_table[index][i];
-                    // printf("connections[%u] = %hhd\n", i, connections[i]);
                 }
 
                 for (uint8_t i = 0; i < 5; i++){ // the max ammount of triangles per cube is 5
@@ -380,15 +368,15 @@ void gen_marching_cubes_mesh(
                     // the three positions to connect are...
                     // gonna do it without indices for now....... seems a bit fucky
 
-                    // vec3 pos;
-                    // pos[0] = cube_edge_pos[connections[i * 3 + 0]][0];
-                    // pos[1] = cube_edge_pos[connections[i * 3 + 0]][1];
-                    // pos[2] = cube_edge_pos[connections[i * 3 + 0]][2];
                     for (uint8_t j = 0; j < 3; j++){
                         // for each vertex, push three floats, the pos
-                        (*mesh_vert_data)[mesh_vert_index++] = cube_edge_pos[connections[i * 3 + j]][0] / res + cube_pos[0]; 
-                        (*mesh_vert_data)[mesh_vert_index++] = cube_edge_pos[connections[i * 3 + j]][1] / res + cube_pos[1]; 
-                        (*mesh_vert_data)[mesh_vert_index++] = cube_edge_pos[connections[i * 3 + j]][2] / res + cube_pos[2]; 
+                        (*mesh_vert_data)[mesh_vert_index + 0] = cube_edge_pos[connections[i * 3 + j]][0] / res + cube_pos[0]; 
+                        (*mesh_vert_data)[mesh_vert_index + 2] = cube_edge_pos[connections[i * 3 + j]][1] / res + cube_pos[1]; 
+                        (*mesh_vert_data)[mesh_vert_index + 1] = cube_edge_pos[connections[i * 3 + j]][2] / res + cube_pos[2]; 
+
+                        // ^ weird order so ccw is front face, from the lut it's cw as front face
+
+                        mesh_vert_index += 3;
                     }
                 }
 
