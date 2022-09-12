@@ -39,7 +39,7 @@ void bmp_load(const char** addresses, uint32_t num_addresses, uint8_t** bitmap){
         fread(*bitmap + insert_offset, map_size, sizeof(uint8_t), fp);
         insert_offset += map_size;
 
-        printf("file_size = %u\tbmp_offset = %u\tres = %u\n", file_size, bmp_offset, res);
+        // printf("file_size = %u\tbmp_offset = %u\tres = %u\n", file_size, bmp_offset, res);
 
         fclose(fp);
     }

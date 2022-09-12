@@ -15,6 +15,6 @@ void main(){
 
     col += 0.2;
 
-    FragColor = vec4(col * 0.05 / vs_depth, 1.0);
+    FragColor = vec4(col * 0.8 / vs_depth, 1.0);
     // FragColor = vec4(col, 1.0);
 }

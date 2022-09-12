@@ -161,7 +161,7 @@ int main(){
     uint32_t num_addresses = sizeof(addresses)/sizeof(char*);
 
     uint8_t* bitmap_data = NULL;
-    bmp_load(addresses, num_addresses, &bitmap_data);
+    // bmp_load(addresses, num_addresses, &bitmap_data);
     printf("Loaded bmp succesfully!\n");
 
     float* mesh_vert_data = NULL;
@@ -169,7 +169,7 @@ int main(){
     uint32_t* mesh_indices_data = NULL;
     uint32_t mesh_indices_size = 0;
 
-    uint32_t res = 100;
+    uint32_t res = 20;
     float surface_value = 0.0;
 
     // gen_voxel_mesh(
@@ -180,11 +180,28 @@ int main(){
 
     double before_gen_time = glfwGetTime();
 
-    gen_marching_cubes_mesh(
-        &mesh_vert_data, &mesh_vert_size,
-        &mesh_indices_data, &mesh_indices_size,
-        res
-    );
+    float* value_map = malloc((res+1)*(res+1)*(res+1) * sizeof(float));
+
+    for (uint32_t z = 0; z <= res; z++){
+        for (uint32_t y = 0; y <= res; y++){
+            for (uint32_t x = 0; x <= res; x++){
+                // bool solid = rand() % 2 == 0;
+                float value = ((float)rand() / (float)RAND_MAX) * 2.0 - 1.0;
+                // float value = (x > 10 && x < 30);
+                // float value = 0.0;
+                if (x == 0 || x == res || y == 0 || y == res || z == 0 || z == res) value = -1.0;
+                // value_map[y][z][x] = value;
+                value_map[y*(res+1)*(res+1) + z*(res+1) + x] = value;
+
+            }
+        }
+    }
+
+    // gen_marching_cubes_mesh(
+    //     &mesh_vert_data, &mesh_vert_size,
+    //     value_map, 0.0,
+    //     res
+    // );
 
     printf("Generating mesh took %f s\n", glfwGetTime() - before_gen_time);
 
@@ -225,7 +242,7 @@ int main(){
     double mouse_y;
     glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
-    float camera_speed = 0.02;
+    float camera_speed = 0.2;
     float mouse_sensitivity = 0.001;
     float fov = GLM_PI_2f;
 
@@ -263,6 +280,15 @@ int main(){
         }
         if (glfwGetKey(window, GLFW_KEY_1)) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         if (glfwGetKey(window, GLFW_KEY_2)) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        gen_marching_cubes_mesh(
+            &mesh_vert_data, &mesh_vert_size,
+            value_map, sin(begin_frame_time),
+            res
+        );
+
+        glNamedBufferData(VBO, mesh_vert_size, mesh_vert_data, GL_DYNAMIC_DRAW);
+        free(mesh_vert_data);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
