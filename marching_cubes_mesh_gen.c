@@ -262,16 +262,6 @@ int8_t tri_table[256][16] =
 {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
 {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
-// float lerp(float a, float b, float x){
-//     return a + (b-a)*x;
-// }
-
-// void vec3_lerp_to(vec3 a, vec3 b, float x, vec3 to){
-//     to[0] = lerp(a[0], b[0], x);
-//     to[1] = lerp(a[1], b[1], x);
-//     to[2] = lerp(a[2], b[2], x);
-// }
-
 float surface_lerp_value(float a, float b, float surface){
     return (surface - a) / (b - a);
 }
@@ -339,20 +329,178 @@ void gen_marching_cubes_mesh(
                 // there are 12 vert positions
                 vec3 cube_edge_pos[12];
 
-                glm_vec3_lerp(cube_vert_offsets[0], cube_vert_offsets[1], surface_lerp_value(cube_value_map[0], cube_value_map[1], surface_value), cube_edge_pos[0]);
-                glm_vec3_lerp(cube_vert_offsets[1], cube_vert_offsets[2], surface_lerp_value(cube_value_map[1], cube_value_map[2], surface_value), cube_edge_pos[1]);
-                glm_vec3_lerp(cube_vert_offsets[2], cube_vert_offsets[3], surface_lerp_value(cube_value_map[2], cube_value_map[3], surface_value), cube_edge_pos[2]);
-                glm_vec3_lerp(cube_vert_offsets[3], cube_vert_offsets[0], surface_lerp_value(cube_value_map[3], cube_value_map[0], surface_value), cube_edge_pos[3]);
+                float edge_pos_lerp[12];
 
-                glm_vec3_lerp(cube_vert_offsets[4], cube_vert_offsets[5], surface_lerp_value(cube_value_map[4], cube_value_map[5], surface_value), cube_edge_pos[4]);
-                glm_vec3_lerp(cube_vert_offsets[5], cube_vert_offsets[6], surface_lerp_value(cube_value_map[5], cube_value_map[6], surface_value), cube_edge_pos[5]);
-                glm_vec3_lerp(cube_vert_offsets[6], cube_vert_offsets[7], surface_lerp_value(cube_value_map[6], cube_value_map[7], surface_value), cube_edge_pos[6]);
-                glm_vec3_lerp(cube_vert_offsets[7], cube_vert_offsets[4], surface_lerp_value(cube_value_map[7], cube_value_map[4], surface_value), cube_edge_pos[7]);
+                edge_pos_lerp[0]  = surface_lerp_value(cube_value_map[0], cube_value_map[1], surface_value);
+                edge_pos_lerp[1]  = surface_lerp_value(cube_value_map[1], cube_value_map[2], surface_value);
+                edge_pos_lerp[2]  = surface_lerp_value(cube_value_map[2], cube_value_map[3], surface_value);
+                edge_pos_lerp[3]  = surface_lerp_value(cube_value_map[3], cube_value_map[0], surface_value);
+                                   
+                edge_pos_lerp[4]  = surface_lerp_value(cube_value_map[4], cube_value_map[5], surface_value);
+                edge_pos_lerp[5]  = surface_lerp_value(cube_value_map[5], cube_value_map[6], surface_value);
+                edge_pos_lerp[6]  = surface_lerp_value(cube_value_map[6], cube_value_map[7], surface_value);
+                edge_pos_lerp[7]  = surface_lerp_value(cube_value_map[7], cube_value_map[4], surface_value);
+                                   
+                edge_pos_lerp[8]  = surface_lerp_value(cube_value_map[0], cube_value_map[4], surface_value);
+                edge_pos_lerp[9]  = surface_lerp_value(cube_value_map[1], cube_value_map[5], surface_value);
+                edge_pos_lerp[10] = surface_lerp_value(cube_value_map[2], cube_value_map[6], surface_value);
+                edge_pos_lerp[11] = surface_lerp_value(cube_value_map[3], cube_value_map[7], surface_value);
 
-                glm_vec3_lerp(cube_vert_offsets[0], cube_vert_offsets[4], surface_lerp_value(cube_value_map[0], cube_value_map[4], surface_value), cube_edge_pos[8]);
-                glm_vec3_lerp(cube_vert_offsets[1], cube_vert_offsets[5], surface_lerp_value(cube_value_map[1], cube_value_map[5], surface_value), cube_edge_pos[9]);
-                glm_vec3_lerp(cube_vert_offsets[2], cube_vert_offsets[6], surface_lerp_value(cube_value_map[2], cube_value_map[6], surface_value), cube_edge_pos[10]);
-                glm_vec3_lerp(cube_vert_offsets[3], cube_vert_offsets[7], surface_lerp_value(cube_value_map[3], cube_value_map[7], surface_value), cube_edge_pos[11]);
+                glm_vec3_lerp(cube_vert_offsets[0], cube_vert_offsets[1], edge_pos_lerp[0], cube_edge_pos[0]);
+                glm_vec3_lerp(cube_vert_offsets[1], cube_vert_offsets[2], edge_pos_lerp[1], cube_edge_pos[1]);
+                glm_vec3_lerp(cube_vert_offsets[2], cube_vert_offsets[3], edge_pos_lerp[2], cube_edge_pos[2]);
+                glm_vec3_lerp(cube_vert_offsets[3], cube_vert_offsets[0], edge_pos_lerp[3], cube_edge_pos[3]);
+
+                glm_vec3_lerp(cube_vert_offsets[4], cube_vert_offsets[5], edge_pos_lerp[4], cube_edge_pos[4]);
+                glm_vec3_lerp(cube_vert_offsets[5], cube_vert_offsets[6], edge_pos_lerp[5], cube_edge_pos[5]);
+                glm_vec3_lerp(cube_vert_offsets[6], cube_vert_offsets[7], edge_pos_lerp[6], cube_edge_pos[6]);
+                glm_vec3_lerp(cube_vert_offsets[7], cube_vert_offsets[4], edge_pos_lerp[7], cube_edge_pos[7]);
+
+                glm_vec3_lerp(cube_vert_offsets[0], cube_vert_offsets[4], edge_pos_lerp[8], cube_edge_pos[8]);
+                glm_vec3_lerp(cube_vert_offsets[1], cube_vert_offsets[5], edge_pos_lerp[9], cube_edge_pos[9]);
+                glm_vec3_lerp(cube_vert_offsets[2], cube_vert_offsets[6], edge_pos_lerp[10], cube_edge_pos[10]);
+                glm_vec3_lerp(cube_vert_offsets[3], cube_vert_offsets[7], edge_pos_lerp[11], cube_edge_pos[11]);
+
+                // now we need to assemble a certain ammount of vertices and indices 
+                // depending on the indices retrieved from the tri_table
+
+                int8_t connections[16];
+
+                for (uint8_t i = 0; i < 16; i++){
+                    connections[i] = tri_table[index][i];
+                }
+
+                for (uint8_t i = 0; i < 5; i++){ // the max ammount of triangles per cube is 5
+                    if (connections[i*3] == -1) break;
+                    // the three positions to connect are...
+                    // gonna do it without indices for now....... seems a bit fucky
+
+                    for (uint8_t j = 0; j < 3; j++){
+                        // for each vertex, push three floats, the pos
+                        (*mesh_vert_data)[mesh_vert_index + 0] = cube_edge_pos[connections[i * 3 + j]][0] / res + cube_pos[0]; 
+                        (*mesh_vert_data)[mesh_vert_index + 2] = cube_edge_pos[connections[i * 3 + j]][1] / res + cube_pos[1]; 
+                        (*mesh_vert_data)[mesh_vert_index + 1] = cube_edge_pos[connections[i * 3 + j]][2] / res + cube_pos[2]; 
+
+                        // ^ weird order so ccw is front face, from the lut it's cw as front face
+
+                        mesh_vert_index += 3;
+                    }
+                }
+
+            }
+        }
+    }
+
+    *mesh_vert_size = mesh_vert_index * sizeof(uint32_t);
+    *mesh_vert_data = realloc(*mesh_vert_data, *mesh_vert_size);
+
+}
+
+
+
+void gen_marching_cubes_mesh_uint8(
+    float** mesh_vert_data,
+    uint32_t* mesh_vert_size,
+    uint8_t* value_map,
+    const float surface_value,
+    uint32_t res
+){
+    uint32_t mesh_vert_index = 0;
+
+    *mesh_vert_size = res*res*res*15*3*sizeof(float);
+    *mesh_vert_data = malloc(*mesh_vert_size);
+
+    for (uint32_t z = 0; z < res; z++){
+        for (uint32_t y = 0; y < res; y++){
+            for (uint32_t x = 0; x < res; x++){
+
+                // printf("max = %u\n", (z+1)*(res+1)*(res+1) + (y+1)*(res+1) + (x+1));
+
+                uint8_t cube_value_map_int[8] = {
+                    value_map[(z+0)*(res+1)*(res+1) + (y+0)*(res+1) + (x+0)],
+                    value_map[(z+1)*(res+1)*(res+1) + (y+0)*(res+1) + (x+0)],
+                    value_map[(z+1)*(res+1)*(res+1) + (y+0)*(res+1) + (x+1)],
+                    value_map[(z+0)*(res+1)*(res+1) + (y+0)*(res+1) + (x+1)],
+                    value_map[(z+0)*(res+1)*(res+1) + (y+1)*(res+1) + (x+0)],
+                    value_map[(z+1)*(res+1)*(res+1) + (y+1)*(res+1) + (x+0)],
+                    value_map[(z+1)*(res+1)*(res+1) + (y+1)*(res+1) + (x+1)],
+                    value_map[(z+0)*(res+1)*(res+1) + (y+1)*(res+1) + (x+1)]
+                };
+
+                float cube_value_map[8];
+                for (uint8_t i = 0; i < 8; i++){
+                    cube_value_map[i] = cube_value_map_int[i] / (float)((uint8_t)0xFF);
+                }
+                
+
+                bool edge_solid[8] = {
+                    cube_value_map[0] > surface_value,
+                    cube_value_map[1] > surface_value,
+                    cube_value_map[2] > surface_value,
+                    cube_value_map[3] > surface_value,
+                    cube_value_map[4] > surface_value,
+                    cube_value_map[5] > surface_value,
+                    cube_value_map[6] > surface_value,
+                    cube_value_map[7] > surface_value 
+                }; 
+
+                uint32_t index = 0;
+
+                for (uint8_t i = 0; i < 8; i++){
+                    index |= edge_solid[i] << i;
+                }
+
+                vec3 cube_pos = {
+                    (x + 0.5) / res,
+                    (y + 0.5) / res,
+                    (z + 0.5) / res
+                };
+
+                vec3 cube_vert_offsets[8] = {
+                    {-.5, -.5, -.5}, 
+                    {-.5, -.5,  .5}, 
+                    { .5, -.5,  .5}, 
+                    { .5, -.5, -.5}, 
+                    {-.5,  .5, -.5}, 
+                    {-.5,  .5,  .5}, 
+                    { .5,  .5,  .5}, 
+                    { .5,  .5, -.5}
+                };
+
+                // there are 12 vert positions
+                vec3 cube_edge_pos[12];
+
+                float edge_pos_lerp[12];
+
+                edge_pos_lerp[0]  = surface_lerp_value(cube_value_map[0], cube_value_map[1], surface_value);
+                edge_pos_lerp[1]  = surface_lerp_value(cube_value_map[1], cube_value_map[2], surface_value);
+                edge_pos_lerp[2]  = surface_lerp_value(cube_value_map[2], cube_value_map[3], surface_value);
+                edge_pos_lerp[3]  = surface_lerp_value(cube_value_map[3], cube_value_map[0], surface_value);
+                                   
+                edge_pos_lerp[4]  = surface_lerp_value(cube_value_map[4], cube_value_map[5], surface_value);
+                edge_pos_lerp[5]  = surface_lerp_value(cube_value_map[5], cube_value_map[6], surface_value);
+                edge_pos_lerp[6]  = surface_lerp_value(cube_value_map[6], cube_value_map[7], surface_value);
+                edge_pos_lerp[7]  = surface_lerp_value(cube_value_map[7], cube_value_map[4], surface_value);
+                                   
+                edge_pos_lerp[8]  = surface_lerp_value(cube_value_map[0], cube_value_map[4], surface_value);
+                edge_pos_lerp[9]  = surface_lerp_value(cube_value_map[1], cube_value_map[5], surface_value);
+                edge_pos_lerp[10] = surface_lerp_value(cube_value_map[2], cube_value_map[6], surface_value);
+                edge_pos_lerp[11] = surface_lerp_value(cube_value_map[3], cube_value_map[7], surface_value);
+
+                glm_vec3_lerp(cube_vert_offsets[0], cube_vert_offsets[1], edge_pos_lerp[0], cube_edge_pos[0]);
+                glm_vec3_lerp(cube_vert_offsets[1], cube_vert_offsets[2], edge_pos_lerp[1], cube_edge_pos[1]);
+                glm_vec3_lerp(cube_vert_offsets[2], cube_vert_offsets[3], edge_pos_lerp[2], cube_edge_pos[2]);
+                glm_vec3_lerp(cube_vert_offsets[3], cube_vert_offsets[0], edge_pos_lerp[3], cube_edge_pos[3]);
+
+                glm_vec3_lerp(cube_vert_offsets[4], cube_vert_offsets[5], edge_pos_lerp[4], cube_edge_pos[4]);
+                glm_vec3_lerp(cube_vert_offsets[5], cube_vert_offsets[6], edge_pos_lerp[5], cube_edge_pos[5]);
+                glm_vec3_lerp(cube_vert_offsets[6], cube_vert_offsets[7], edge_pos_lerp[6], cube_edge_pos[6]);
+                glm_vec3_lerp(cube_vert_offsets[7], cube_vert_offsets[4], edge_pos_lerp[7], cube_edge_pos[7]);
+
+                glm_vec3_lerp(cube_vert_offsets[0], cube_vert_offsets[4], edge_pos_lerp[8], cube_edge_pos[8]);
+                glm_vec3_lerp(cube_vert_offsets[1], cube_vert_offsets[5], edge_pos_lerp[9], cube_edge_pos[9]);
+                glm_vec3_lerp(cube_vert_offsets[2], cube_vert_offsets[6], edge_pos_lerp[10], cube_edge_pos[10]);
+                glm_vec3_lerp(cube_vert_offsets[3], cube_vert_offsets[7], edge_pos_lerp[11], cube_edge_pos[11]);
 
                 // now we need to assemble a certain ammount of vertices and indices 
                 // depending on the indices retrieved from the tri_table

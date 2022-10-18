@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
+#include <string.h>
 
 #include "gl.h"
 #include "glfw3.h"
@@ -20,9 +21,6 @@ static inline float noise3d(float x, float y, float z){
     return d;
 
 }
-
-// #include "noise.h"
-#include "new_noise.h"
 
 // i dont see people do this often, but lets see what happens
 #include "voxel_mesh_gen.c"
@@ -158,18 +156,40 @@ int main(){
         "ct/i102.bmp"
     };
 
+    // char addresses[67][20]; // 67 strings of 20 chars
+
+    // char temp[80] = { 0 };
+
+    // for (uint32_t i = 36; i <= 102; i++)
+    // {
+    //     sprintf(addresses[i-36], "ct/i%u.bmp", i);
+
+    // }
+
+    // for (uint32_t i = 0; i <= (102 - 36); i++)
+    // {
+    //     printf("addresses[%u] = %s\n", i, addresses[i]);
+    // }
+
     uint32_t num_addresses = sizeof(addresses)/sizeof(char*);
 
     uint8_t* bitmap_data = NULL;
-    // bmp_load(addresses, num_addresses, &bitmap_data);
-    printf("Loaded bmp succesfully!\n");
+    uint32_t bitmap_res = 0;
+    bmp_load(addresses, num_addresses, &bitmap_data, &bitmap_res);
+    printf("Loaded bmp succesfully!\nres = %u\n", bitmap_res);
+
+    // first non-0 value should be at 0xE9, or 233
+    // printf("%02X\n", bitmap_data[233]); // 67
+    // printf("%02X\n", bitmap_data[232]); // 00
+
+
 
     float* mesh_vert_data = NULL;
     uint32_t mesh_vert_size = 0;
     uint32_t* mesh_indices_data = NULL;
     uint32_t mesh_indices_size = 0;
 
-    uint32_t res = 20;
+    uint32_t res = 40;
     float surface_value = 0.0;
 
     // gen_voxel_mesh(
@@ -182,30 +202,28 @@ int main(){
 
     float* value_map = malloc((res+1)*(res+1)*(res+1) * sizeof(float));
 
+
     for (uint32_t z = 0; z <= res; z++){
         for (uint32_t y = 0; y <= res; y++){
             for (uint32_t x = 0; x <= res; x++){
-                // bool solid = rand() % 2 == 0;
+                // float value = rand() % 2 == 0;
                 float value = ((float)rand() / (float)RAND_MAX) * 2.0 - 1.0;
-                // float value = (x > 10 && x < 30);
-                // float value = 0.0;
+
+                // printf("getting value at: %u %u %u\n", x, y, z);
+                // float value = value_in_bmp(bitmap_data, bitmap_res, x/(res+1), y/(res+1), z/(res+1))/(float)0xFF;
+                // value = value * 2.0 - 1.0;
+
                 if (x == 0 || x == res || y == 0 || y == res || z == 0 || z == res) value = -1.0;
-                // value_map[y][z][x] = value;
                 value_map[y*(res+1)*(res+1) + z*(res+1) + x] = value;
 
             }
         }
     }
 
-    // gen_marching_cubes_mesh(
-    //     &mesh_vert_data, &mesh_vert_size,
-    //     value_map, 0.0,
-    //     res
-    // );
+    free(bitmap_data);
+    printf("Generating data took %f s\n", glfwGetTime() - before_gen_time);
 
-    printf("Generating mesh took %f s\n", glfwGetTime() - before_gen_time);
-
-    printf("mesh_vert_size/sizeof(float) = %u\nmesh_indices_size/sizeof(uint32_t) = %u\n", mesh_vert_size/sizeof(float), mesh_indices_size/sizeof(uint32_t));    
+    // printf("mesh_vert_size/sizeof(float) = %llu\nmesh_indices_size/sizeof(uint32_t) = %llu\n", mesh_vert_size/sizeof(float), mesh_indices_size/sizeof(uint32_t));
 
     // the stupid gpu objects
     uint32_t VAO, VBO, EBO;
@@ -230,6 +248,17 @@ int main(){
 
     glVertexArrayVertexBuffer(VAO, 0, VBO, 0, 3*sizeof(float));
     glVertexArrayElementBuffer(VAO, EBO);
+
+
+    gen_marching_cubes_mesh_uint8(
+        &mesh_vert_data, &mesh_vert_size,
+        bitmap_data, sin(glfwGetTime()),
+        bitmap_res - 1
+    );
+
+    glNamedBufferData(VBO, mesh_vert_size, mesh_vert_data, GL_DYNAMIC_DRAW);
+    printf("a\n");
+    free(mesh_vert_data);
 
     vec3 cam_pos = {0.0, 0.0, 0.0};
     vec2 cam_rot = {0.0, 0.0}; // Pitch --- Yaw
@@ -281,14 +310,20 @@ int main(){
         if (glfwGetKey(window, GLFW_KEY_1)) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         if (glfwGetKey(window, GLFW_KEY_2)) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        gen_marching_cubes_mesh(
-            &mesh_vert_data, &mesh_vert_size,
-            value_map, sin(begin_frame_time),
-            res
-        );
+        // gen_marching_cubes_mesh(
+        //     &mesh_vert_data, &mesh_vert_size,
+        //     value_map, sin(glfwGetTime()),
+        //     res
+        // );
 
-        glNamedBufferData(VBO, mesh_vert_size, mesh_vert_data, GL_DYNAMIC_DRAW);
-        free(mesh_vert_data);
+        // gen_marching_cubes_mesh_uint8(
+        //     &mesh_vert_data, &mesh_vert_size,
+        //     bitmap_data, sin(glfwGetTime()),
+        //     bitmap_res - 1
+        // );
+
+        // glNamedBufferData(VBO, mesh_vert_size, mesh_vert_data, GL_DYNAMIC_DRAW);
+        // free(mesh_vert_data);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -342,12 +377,15 @@ int main(){
         glUniformMatrix4fv(glGetUniformLocation(main_program, "view"), 1, GL_FALSE, &view_matrix[0][0]);
         glUniformMatrix4fv(glGetUniformLocation(main_program, "projection"), 1, GL_FALSE, &projection_matrix[0][0]);
 
-        glDrawElements(GL_TRIANGLES, mesh_indices_size/sizeof(uint32_t), GL_UNSIGNED_INT, NULL);
+        // glDrawElements(GL_TRIANGLES, mesh_indices_size/sizeof(uint32_t), GL_UNSIGNED_INT, NULL);
         glDrawArrays(GL_TRIANGLES, 0, mesh_vert_size/3/sizeof(float));
 
         end_frame_time = glfwGetTime();
         glfwSwapBuffers(window);
     }
+
+
+    free(bitmap_data);
 
     glfwDestroyWindow(window);
     glfwTerminate();
