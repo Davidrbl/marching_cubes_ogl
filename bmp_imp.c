@@ -1,7 +1,10 @@
 #include <stdio.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <assert.h>
+#include <math.h>
+
+#include "bmp_imp.h"
 
 void bmp_load(const char** addresses, uint32_t num_addresses, uint8_t** bitmap, uint32_t* bmp_res){
     uint32_t insert_offset = 0;

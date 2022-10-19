@@ -1,6 +1,8 @@
-#include "cglm/call.h"
 #include <stdlib.h>
-#include <stdint.h>
+
+#include "marching_cubes_mesh_gen.h"
+
+#include "cglm/call.h"
 
 // from http://paulbourke.net/geometry/polygonise/ also algorithm explanation there
 
@@ -300,8 +302,8 @@ void gen_marching_cubes_mesh(
                     cube_value_map[4] > surface_value,
                     cube_value_map[5] > surface_value,
                     cube_value_map[6] > surface_value,
-                    cube_value_map[7] > surface_value 
-                }; 
+                    cube_value_map[7] > surface_value
+                };
 
                 uint32_t index = 0;
 
@@ -316,13 +318,13 @@ void gen_marching_cubes_mesh(
                 };
 
                 vec3 cube_vert_offsets[8] = {
-                    {-.5, -.5, -.5}, 
-                    {-.5, -.5,  .5}, 
-                    { .5, -.5,  .5}, 
-                    { .5, -.5, -.5}, 
-                    {-.5,  .5, -.5}, 
-                    {-.5,  .5,  .5}, 
-                    { .5,  .5,  .5}, 
+                    {-.5, -.5, -.5},
+                    {-.5, -.5,  .5},
+                    { .5, -.5,  .5},
+                    { .5, -.5, -.5},
+                    {-.5,  .5, -.5},
+                    {-.5,  .5,  .5},
+                    { .5,  .5,  .5},
                     { .5,  .5, -.5}
                 };
 
@@ -335,12 +337,12 @@ void gen_marching_cubes_mesh(
                 edge_pos_lerp[1]  = surface_lerp_value(cube_value_map[1], cube_value_map[2], surface_value);
                 edge_pos_lerp[2]  = surface_lerp_value(cube_value_map[2], cube_value_map[3], surface_value);
                 edge_pos_lerp[3]  = surface_lerp_value(cube_value_map[3], cube_value_map[0], surface_value);
-                                   
+
                 edge_pos_lerp[4]  = surface_lerp_value(cube_value_map[4], cube_value_map[5], surface_value);
                 edge_pos_lerp[5]  = surface_lerp_value(cube_value_map[5], cube_value_map[6], surface_value);
                 edge_pos_lerp[6]  = surface_lerp_value(cube_value_map[6], cube_value_map[7], surface_value);
                 edge_pos_lerp[7]  = surface_lerp_value(cube_value_map[7], cube_value_map[4], surface_value);
-                                   
+
                 edge_pos_lerp[8]  = surface_lerp_value(cube_value_map[0], cube_value_map[4], surface_value);
                 edge_pos_lerp[9]  = surface_lerp_value(cube_value_map[1], cube_value_map[5], surface_value);
                 edge_pos_lerp[10] = surface_lerp_value(cube_value_map[2], cube_value_map[6], surface_value);
@@ -431,7 +433,7 @@ void gen_marching_cubes_mesh_uint8(
                 for (uint8_t i = 0; i < 8; i++){
                     cube_value_map[i] = cube_value_map_int[i] / (float)((uint8_t)0xFF);
                 }
-                
+
 
                 bool edge_solid[8] = {
                     cube_value_map[0] > surface_value,
@@ -441,8 +443,8 @@ void gen_marching_cubes_mesh_uint8(
                     cube_value_map[4] > surface_value,
                     cube_value_map[5] > surface_value,
                     cube_value_map[6] > surface_value,
-                    cube_value_map[7] > surface_value 
-                }; 
+                    cube_value_map[7] > surface_value
+                };
 
                 uint32_t index = 0;
 
@@ -457,13 +459,13 @@ void gen_marching_cubes_mesh_uint8(
                 };
 
                 vec3 cube_vert_offsets[8] = {
-                    {-.5, -.5, -.5}, 
-                    {-.5, -.5,  .5}, 
-                    { .5, -.5,  .5}, 
-                    { .5, -.5, -.5}, 
-                    {-.5,  .5, -.5}, 
-                    {-.5,  .5,  .5}, 
-                    { .5,  .5,  .5}, 
+                    {-.5, -.5, -.5},
+                    {-.5, -.5,  .5},
+                    { .5, -.5,  .5},
+                    { .5, -.5, -.5},
+                    {-.5,  .5, -.5},
+                    {-.5,  .5,  .5},
+                    { .5,  .5,  .5},
                     { .5,  .5, -.5}
                 };
 
@@ -476,12 +478,12 @@ void gen_marching_cubes_mesh_uint8(
                 edge_pos_lerp[1]  = surface_lerp_value(cube_value_map[1], cube_value_map[2], surface_value);
                 edge_pos_lerp[2]  = surface_lerp_value(cube_value_map[2], cube_value_map[3], surface_value);
                 edge_pos_lerp[3]  = surface_lerp_value(cube_value_map[3], cube_value_map[0], surface_value);
-                                   
+
                 edge_pos_lerp[4]  = surface_lerp_value(cube_value_map[4], cube_value_map[5], surface_value);
                 edge_pos_lerp[5]  = surface_lerp_value(cube_value_map[5], cube_value_map[6], surface_value);
                 edge_pos_lerp[6]  = surface_lerp_value(cube_value_map[6], cube_value_map[7], surface_value);
                 edge_pos_lerp[7]  = surface_lerp_value(cube_value_map[7], cube_value_map[4], surface_value);
-                                   
+
                 edge_pos_lerp[8]  = surface_lerp_value(cube_value_map[0], cube_value_map[4], surface_value);
                 edge_pos_lerp[9]  = surface_lerp_value(cube_value_map[1], cube_value_map[5], surface_value);
                 edge_pos_lerp[10] = surface_lerp_value(cube_value_map[2], cube_value_map[6], surface_value);

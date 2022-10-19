@@ -1,6 +1,9 @@
-#include "cglm/call.h"
 #include <stdlib.h>
-#include <stdint.h>
+
+#include "voxel_mesh_gen.h"
+
+#include "noise3d.h"
+#include "cglm/call.h"
 
 void gen_voxel_mesh(
     float** mesh_vert_data,
@@ -13,9 +16,9 @@ void gen_voxel_mesh(
 
     bool cube_show_map[res][res][res];
 
-    for (int8_t z = 0; z < res; z++){
-        for (int8_t y = 0; y < res; y++){
-            for (int8_t x = 0; x < res; x++){
+    for (uint8_t z = 0; z < res; z++){
+        for (uint8_t y = 0; y < res; y++){
+            for (uint8_t x = 0; x < res; x++){
                 vec3 cube_pos = {
                     (x + 0.5) / res,
                     (y + 0.5) / res,
@@ -25,9 +28,9 @@ void gen_voxel_mesh(
                 bool cube_show = cur_value > surface_value;
                 cube_show_map[z][y][x] = cube_show;
                 if (!cube_show) continue;
-                
+
                 *mesh_vert_size += 8 * 3 * sizeof(float);
-                *mesh_indices_size += 6 * 6 * sizeof(uint32_t);            
+                *mesh_indices_size += 6 * 6 * sizeof(uint32_t);
             }
         }
     }
@@ -40,9 +43,9 @@ void gen_voxel_mesh(
 
     // now the actual vertex and index calculations
 
-    for (int8_t z = 0; z < res; z++){
-        for (int8_t y = 0; y < res; y++){
-            for (int8_t x = 0; x < res; x++){
+    for (uint8_t z = 0; z < res; z++){
+        for (uint8_t y = 0; y < res; y++){
+            for (uint8_t x = 0; x < res; x++){
                 vec3 cube_pos = {
                     (x + 0.5) / res,
                     (y + 0.5) / res,
@@ -54,9 +57,9 @@ void gen_voxel_mesh(
 
                 uint32_t cube_vert_begin = mesh_vert_index/3;
 
-                for (int8_t cz = 0; cz < 2; cz++){
-                    for (int8_t cy = 0; cy < 2; cy++){
-                        for (int8_t cx = 0; cx < 2; cx++){
+                for (uint8_t cz = 0; cz < 2; cz++){
+                    for (uint8_t cy = 0; cy < 2; cy++){
+                        for (uint8_t cx = 0; cx < 2; cx++){
                             vec3 vert_offset = {
                                 ((float)cx - 0.5) / res, // -0.5 so it's from 0 to 1 to -0.5 to 0.5
                                 ((float)cy - 0.5) / res,
@@ -145,7 +148,7 @@ void gen_voxel_mesh(
 
                     mesh_indices_index += 3;
                 }
-            
+
             }
         }
     }
