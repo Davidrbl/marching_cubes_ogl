@@ -178,7 +178,6 @@ int main(){
     uint32_t mesh_indices_size = 0;
 
     uint32_t res = 40;
-    float surface_value = 0.0;
 
     // gen_voxel_mesh(
     //     &mesh_vert_data, &mesh_vert_size,
@@ -237,15 +236,15 @@ int main(){
     glVertexArrayElementBuffer(VAO, EBO);
 
 
+    float surface_value = .7f;
     gen_marching_cubes_mesh_uint8(
         &mesh_vert_data, &mesh_vert_size,
-        bitmap_data, .7f,
+        bitmap_data, surface_value,
         bitmap_res - 1
     );
 
     glNamedBufferData(VBO, mesh_vert_size, mesh_vert_data, GL_DYNAMIC_DRAW);
     printf("a\n");
-    free(mesh_vert_data);
 
     vec3 cam_pos = {.482504f, .210423f, 1.234449f};
     vec2 cam_rot = {.1125f, .011999f}; // Pitch --- Yaw
@@ -273,6 +272,16 @@ int main(){
         dt = end_frame_time - begin_frame_time;
         begin_frame_time = glfwGetTime();
 
+        if (glfwGetKey(window, GLFW_KEY_UP) || glfwGetKey(window, GLFW_KEY_DOWN)) {
+            surface_value += (float) (glfwGetKey(window, GLFW_KEY_UP) - glfwGetKey(window, GLFW_KEY_DOWN)) * 0.05f;
+            gen_marching_cubes_mesh_uint8(
+                &mesh_vert_data, &mesh_vert_size,
+                bitmap_data, surface_value,
+                bitmap_res - 1
+            );
+
+            glNamedBufferData(VBO, mesh_vert_size, mesh_vert_data, GL_DYNAMIC_DRAW);
+        }
         if (glfwGetKey(window, GLFW_KEY_ESCAPE)) glfwSetWindowShouldClose(window, 1);
         if (glfwGetKey(window, GLFW_KEY_P)) printf("cam_pos: %f --- %f --- %f\n", cam_pos[0], cam_pos[1], cam_pos[2]);
         if (glfwGetKey(window, GLFW_KEY_R)) printf("cam_rot: %f --- %f\n", cam_rot[0], cam_rot[1]);
@@ -373,6 +382,7 @@ int main(){
 
 
     free(bitmap_data);
+    free(mesh_vert_data);
 
     glfwDestroyWindow(window);
     glfwTerminate();
