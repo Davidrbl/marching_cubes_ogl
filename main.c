@@ -239,7 +239,7 @@ int main(){
 
     gen_marching_cubes_mesh_uint8(
         &mesh_vert_data, &mesh_vert_size,
-        bitmap_data, sin(glfwGetTime()),
+        bitmap_data, .7f,
         bitmap_res - 1
     );
 
@@ -247,8 +247,8 @@ int main(){
     printf("a\n");
     free(mesh_vert_data);
 
-    vec3 cam_pos = {0.0, 0.0, 0.0};
-    vec2 cam_rot = {0.0, 0.0}; // Pitch --- Yaw
+    vec3 cam_pos = {.482504f, .210423f, 1.234449f};
+    vec2 cam_rot = {.1125f, .011999f}; // Pitch --- Yaw
     vec3 cam_fwd = GLM_VEC3_ZERO_INIT;
 
     double prev_mouse_x;
@@ -258,8 +258,8 @@ int main(){
     double mouse_y;
     glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
-    float camera_speed = 0.2;
-    float mouse_sensitivity = 0.001;
+    float camera_speed = 16.f;
+    float mouse_sensitivity = 0.0015f;
     float fov = GLM_PI_2f;
 
     double begin_frame_time = glfwGetTime();
