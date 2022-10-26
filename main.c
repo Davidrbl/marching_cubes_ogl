@@ -33,7 +33,8 @@ int main(){
 
     uint32_t window_width = 1024, window_height = 1024;
 
-    GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Window", NULL, NULL);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    GLFWwindow* window = glfwCreateWindow(window_width, window_height, "march those cubes", NULL, NULL);
 
     if (!window){
         printf("create window fail!\n");
@@ -47,6 +48,13 @@ int main(){
         return 1;
     }
 
+    glfwSwapInterval(0);
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (glfwRawMouseMotionSupported()) {
+        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    }
+
     uint32_t main_program;
 
     create_program(
@@ -57,8 +65,6 @@ int main(){
         "main.frag",
         &main_program
     );
-
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -257,15 +263,15 @@ int main(){
     double mouse_y;
     glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
-    float camera_speed = 16.f;
+    float camera_speed = 0.0025f;
     float mouse_sensitivity = 0.0015f;
     float fov = GLM_PI_2f;
 
     double begin_frame_time = glfwGetTime();
     double end_frame_time = glfwGetTime();
-    double dt = end_frame_time - begin_frame_time;
+    double dt;
 
-    while (!glfwWindowShouldClose(window)){        
+    while (!glfwWindowShouldClose(window)){
         glfwPollEvents();
 
         // Time stuff
@@ -298,13 +304,22 @@ int main(){
         if (glfwGetKey(window, GLFW_KEY_B)) {
             for (uint32_t i = 0; i < mesh_vert_size/3/sizeof(float); i++){
                 printf("vert %u\t%f --- %f --- %f\n", i,
-                    mesh_vert_data[i*3+0], mesh_vert_data[i*3+1], mesh_vert_data[i*3+2] 
+                    mesh_vert_data[i*3+0], mesh_vert_data[i*3+1], mesh_vert_data[i*3+2]
                 );
             }
             printf("\n");
         }
         if (glfwGetKey(window, GLFW_KEY_1)) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         if (glfwGetKey(window, GLFW_KEY_2)) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if (glfwGetKey(window, GLFW_KEY_T)) {
+            printf("dt -> %f ms --- framerate -> %f fps\n", dt * 1000., 1. / dt);
+        }
+        if (glfwGetKey(window, GLFW_KEY_M)){
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+        if (glfwGetKey(window, GLFW_KEY_N)){
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        }
 
         // gen_marching_cubes_mesh(
         //     &mesh_vert_data, &mesh_vert_size,
@@ -334,7 +349,7 @@ int main(){
         if (cam_rot[0] > 0.49f * GLM_PI){
             cam_rot[0] = 0.49f * GLM_PI;
         }
-        
+
         if (cam_rot[0] < -0.49f * GLM_PI){
             cam_rot[0] = -0.49f * GLM_PI;
         }
@@ -346,16 +361,16 @@ int main(){
         cam_fwd[2] = -cosf(cam_rot[1]) * a; // - so -z is forward
 
         float mul;
-        mul = glfwGetKey(window, GLFW_KEY_W) - glfwGetKey(window, GLFW_KEY_S);
-        cam_pos[0] += sinf(-cam_rot[1]) * mul * camera_speed * dt;
-        cam_pos[2] += -cosf(cam_rot[1]) * mul * camera_speed * dt;
+        mul = (float) (glfwGetKey(window, GLFW_KEY_W) - glfwGetKey(window, GLFW_KEY_S));
+        cam_pos[0] += sinf(-cam_rot[1]) * mul * camera_speed;
+        cam_pos[2] += -cosf(cam_rot[1]) * mul * camera_speed;
 
-        mul = glfwGetKey(window, GLFW_KEY_D) - glfwGetKey(window, GLFW_KEY_A);
-        cam_pos[0] += cosf(cam_rot[1]) * mul * camera_speed * dt;
-        cam_pos[2] += sinf(-cam_rot[1]) * mul * camera_speed * dt;
+        mul = (float) (glfwGetKey(window, GLFW_KEY_D) - glfwGetKey(window, GLFW_KEY_A));
+        cam_pos[0] += cosf(cam_rot[1]) * mul * camera_speed;
+        cam_pos[2] += sinf(-cam_rot[1]) * mul * camera_speed;
 
-        mul = glfwGetKey(window, GLFW_KEY_SPACE) - glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
-        cam_pos[1] += mul * camera_speed * dt;
+        mul = (float) (glfwGetKey(window, GLFW_KEY_SPACE) - glfwGetKey(window, GLFW_KEY_LEFT_SHIFT));
+        cam_pos[1] += mul * camera_speed;
 
         // Calculate da matrices for this frame
         glm_mat4_identity(model_matrix);
