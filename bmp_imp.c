@@ -6,7 +6,7 @@
 
 #include "bmp_imp.h"
 
-void bmp_load(const char** addresses, uint32_t num_addresses, uint8_t** bitmap, uint32_t* bmp_res){
+void bmp_load(char* const* addresses, uint32_t num_addresses, uint8_t** bitmap, uint32_t* bmp_res){
     uint32_t insert_offset = 0;
 
     bool bitmap_initted = false;
@@ -33,7 +33,6 @@ void bmp_load(const char** addresses, uint32_t num_addresses, uint8_t** bitmap, 
         uint32_t res = (uint32_t)sqrt(map_size);
 
         if (!bitmap_initted){
-            // *bitmap = malloc(map_size * num_addresses);
             *bitmap = malloc(res*res*res);
             printf("malloced %d bytes\n", res*res*res);
             assert(*bitmap);
@@ -44,12 +43,14 @@ void bmp_load(const char** addresses, uint32_t num_addresses, uint8_t** bitmap, 
         }
 
         for (uint8_t j = 0; j < 7; j++){
+            // !!! DIT IS NIET GOED !!!
+            // we zetten nu elke 'plak' zes keer in memory, om in elke dimensie dezelfde resolutie te krijgen
+            // dit is erg memory en tijd inefficient
+            // en moeten we fixen
             fseek(fp, bmp_offset, SEEK_SET);
             fread(*bitmap + insert_offset, map_size, sizeof(uint8_t), fp);
             insert_offset += map_size;
         }
-
-        // printf("file_size = %u\tbmp_offset = %u\tres = %u\n", file_size, bmp_offset, res);
 
         fclose(fp);
     }

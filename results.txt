@@ -1,0 +1,16 @@
+malloced 134217728 bytes
+insert_offset: 122945536
+Loaded bmp succesfully!
+res = 512
+Generating data took 2.398056 s
+dt: 6.226300
+dt: 3.744300
+dt: 32.330500
+dt: 17.740800
+dt: 30.677300
+dt: 18.973100
+dt: 4.938700
+dt: 2.260800
+dt: 31.653100
+dt: 14.932400
+dt: 30.930900

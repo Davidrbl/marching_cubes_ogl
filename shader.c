@@ -59,7 +59,13 @@ void create_program_compute(const char* compute_shader_path, uint32_t* dest) {
     int32_t succes = 0;
     glGetProgramiv(*dest, GL_LINK_STATUS, &succes);
     if (succes != GL_TRUE) {
+        int32_t error_len = 0;
+        glGetShaderiv(compute_shader, GL_INFO_LOG_LENGTH, &error_len);
+        GLchar error_string[error_len + 1];
+        glGetShaderInfoLog(compute_shader, error_len, &error_len, error_string);
+
         printf("SHADER LINK ERROR\n");
+        printf("%s\n", error_string);
         exit(1);
     }
 

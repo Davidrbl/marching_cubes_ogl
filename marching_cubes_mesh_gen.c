@@ -363,7 +363,7 @@ void gen_marching_cubes_mesh(
                 glm_vec3_lerp(cube_vert_offsets[2], cube_vert_offsets[6], edge_pos_lerp[10], cube_edge_pos[10]);
                 glm_vec3_lerp(cube_vert_offsets[3], cube_vert_offsets[7], edge_pos_lerp[11], cube_edge_pos[11]);
 
-                // now we need to assemble a certain ammount of vertices and indices 
+                // now we need to assemble a certain ammount of vertices and indices
                 // depending on the indices retrieved from the tri_table
 
                 int8_t connections[16];
@@ -379,9 +379,9 @@ void gen_marching_cubes_mesh(
 
                     for (uint8_t j = 0; j < 3; j++){
                         // for each vertex, push three floats, the pos
-                        (*mesh_vert_data)[mesh_vert_index + 0] = cube_edge_pos[connections[i * 3 + j]][0] / res + cube_pos[0]; 
-                        (*mesh_vert_data)[mesh_vert_index + 2] = cube_edge_pos[connections[i * 3 + j]][1] / res + cube_pos[1]; 
-                        (*mesh_vert_data)[mesh_vert_index + 1] = cube_edge_pos[connections[i * 3 + j]][2] / res + cube_pos[2]; 
+                        (*mesh_vert_data)[mesh_vert_index + 0] = cube_edge_pos[connections[i * 3 + j]][0] / res + cube_pos[0];
+                        (*mesh_vert_data)[mesh_vert_index + 2] = cube_edge_pos[connections[i * 3 + j]][1] / res + cube_pos[1];
+                        (*mesh_vert_data)[mesh_vert_index + 1] = cube_edge_pos[connections[i * 3 + j]][2] / res + cube_pos[2];
 
                         // ^ weird order so ccw is front face, from the lut it's cw as front face
 
@@ -504,7 +504,7 @@ void gen_marching_cubes_mesh_uint8(
                 glm_vec3_lerp(cube_vert_offsets[2], cube_vert_offsets[6], edge_pos_lerp[10], cube_edge_pos[10]);
                 glm_vec3_lerp(cube_vert_offsets[3], cube_vert_offsets[7], edge_pos_lerp[11], cube_edge_pos[11]);
 
-                // now we need to assemble a certain ammount of vertices and indices 
+                // now we need to assemble a certain ammount of vertices and indices
                 // depending on the indices retrieved from the tri_table
 
                 int8_t connections[16];
@@ -520,9 +520,9 @@ void gen_marching_cubes_mesh_uint8(
 
                     for (uint8_t j = 0; j < 3; j++){
                         // for each vertex, push three floats, the pos
-                        (*mesh_vert_data)[mesh_vert_index + 0] = cube_edge_pos[connections[i * 3 + j]][0] / res + cube_pos[0]; 
-                        (*mesh_vert_data)[mesh_vert_index + 2] = cube_edge_pos[connections[i * 3 + j]][1] / res + cube_pos[1]; 
-                        (*mesh_vert_data)[mesh_vert_index + 1] = cube_edge_pos[connections[i * 3 + j]][2] / res + cube_pos[2]; 
+                        (*mesh_vert_data)[mesh_vert_index + 0] = cube_edge_pos[connections[i * 3 + j]][0] / res + cube_pos[0];
+                        (*mesh_vert_data)[mesh_vert_index + 2] = cube_edge_pos[connections[i * 3 + j]][1] / res + cube_pos[1];
+                        (*mesh_vert_data)[mesh_vert_index + 1] = cube_edge_pos[connections[i * 3 + j]][2] / res + cube_pos[2];
 
                         // ^ weird order so ccw is front face, from the lut it's cw as front face
 
