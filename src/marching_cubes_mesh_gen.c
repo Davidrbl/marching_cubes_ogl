@@ -1,8 +1,8 @@
 #include <stdlib.h>
 
-#include "marching_cubes_mesh_gen.h"
+#include <cglm/call.h>
 
-#include "cglm/call.h"
+#include "marching_cubes_mesh_gen.h"
 
 // from http://paulbourke.net/geometry/polygonise/ also algorithm explanation there
 

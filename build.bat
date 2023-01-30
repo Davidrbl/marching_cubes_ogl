@@ -1,23 +1,26 @@
-gcc -g shader.c -O2 -c -o obj/shader.o
+mkdir build/src
+mkdir build/libs
 
-gcc -g gl.c -O2 -c -o obj/gl.o
+gcc -g src/shader.c -O2 -c -o build/src/shader.o
 
-gcc -g main.c -O2 -c -o obj/main.o
+gcc -g libs/gl.c -O2 -c -o build/libs/gl.o
 
-gcc -g bmp_imp.c -O2 -c -o obj/bmp_imp.o
+gcc -g src/main.c -O2 -c -o build/src/main.o
 
-gcc -g marching_cubes_mesh_gen.c -O2 -c -o obj/marching_cubes_mesh_gen.o
+gcc -g src/bmp_imp.c -O2 -c -o build/src/bmp_imp.o
 
-gcc -g voxel_mesh_gen.c -O2 -c -o obj/voxel_mesh_gen.o
+gcc -g src/marching_cubes_mesh_gen.c -O2 -c -o build/src/marching_cubes_mesh_gen.o
+
+gcc -g src/voxel_mesh_gen.c -O2 -c -o build/src/voxel_mesh_gen.o
 
 gcc ^
 -g ^
-obj/shader.o ^
-obj/gl.o ^
-obj/main.o ^
-obj/bmp_imp.o ^
-obj/marching_cubes_mesh_gen.o ^
-obj/voxel_mesh_gen.o ^
+build/src/shader.o ^
+build/libs/gl.o ^
+build/src/main.o ^
+build/src/bmp_imp.o ^
+build/src/marching_cubes_mesh_gen.o ^
+build/src/voxel_mesh_gen.o ^
 -lglfw3 ^
 -O2 ^
 -o main.exe

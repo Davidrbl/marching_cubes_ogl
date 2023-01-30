@@ -1,9 +1,10 @@
 #include <stdlib.h>
 
+#include <cglm/call.h>
+
 #include "voxel_mesh_gen.h"
 
 #include "noise3d.h"
-#include "cglm/call.h"
 
 void gen_voxel_mesh(
     float** mesh_vert_data,

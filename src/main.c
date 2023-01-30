@@ -3,11 +3,12 @@
 #include <math.h>
 #include <string.h>
 
-#include "gl.h"
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+#include <cglm/call.h>
+
 #include "shader.h"
-#include "cglm/call.h"
 
 #include "noise3d.h"
 
@@ -19,7 +20,7 @@
 #define MOUSE_SENSITIVITY 0.001
 #define CAMERA_SPEED 1.0
 
-#define USE_CT 0
+#define USE_CT 1
 
 static void glfw_error_callback(int error, const char* desc){
     printf("GLFW_ERROR: %d ---\t %s\n", error, desc);
@@ -43,7 +44,7 @@ void GLAPIENTRY gl_debug_callback(
             source, type, id, severity, length, message, userParam);
 }
 
-int main(){
+int main(void){
     glfwSetErrorCallback(glfw_error_callback);
 
     if (!glfwInit()){
@@ -85,11 +86,11 @@ int main(){
     uint32_t main_program;
 
     create_program(
-        "main.vert",
+        "src/shaders/main.vert",
         NULL,
         NULL,
         NULL,
-        "main.frag",
+        "src/shaders/main.frag",
         &main_program
     );
 
@@ -200,7 +201,6 @@ int main(){
     float fov = GLM_PI_2f;
 
     double begin_frame_time = glfwGetTime();
-    double end_frame_time = glfwGetTime();
     double dt;
     uint64_t frame = 0;
 
@@ -298,7 +298,6 @@ int main(){
         glDrawArrays(GL_TRIANGLES, 0, mesh_vert_size/3/sizeof(float));
 
         glfwSwapBuffers(window);
-        end_frame_time = glfwGetTime();
 
         dt = glfwGetTime() - begin_frame_time;
         if (frame % 100 == 0) printf("dt: %f\n", dt*1000);

@@ -1,20 +1,23 @@
 .PHONY: all clean run debug
 
+PROJECT := marching-cubes
+VERSION := 0.1.0
+
 CC := clang
 DEBUGGER := lldb
 MKDIR := mkdir -p
-SRCDIR := .
-OBJDIR := obj
-DEPDIR := dep
-INCDIR := .
-SRCS := $(wildcard $(SRCDIR)/*.c)
-OBJS := $(subst $(SRCDIR)/,$(OBJDIR)/,$(SRCS:.c=.o))
-DEPS := $(subst $(SRCDIR)/,$(DEPDIR)/,$(SRCS:.c=.d))
-BIN ?= main
+SRCDIR := src
+LIBDIR := libs
+BUILDDIR := build
+INCDIRS := include
+SRCS := $(shell find $(SRCDIR) $(LIBDIR) -type f -name '*.c')
+OBJS := $(SRCS:%=$(BUILDDIR)/%.o)
+DEPS := $(SRCS:%=$(BUILDDIR)/%.d)
+BIN := $(BUILDDIR)/$(PROJECT)-$(VERSION)
 
-CPPFLAGS := -I$(INCDIR) $(CPPFLAGS)
-CFLAGS := -Wall -Wextra -Wpedantic -pipe -std=c17 $(CFLAGS)
-LDFLAGS := -fuse-ld=lld -lm $(LDFLAGS)
+CPPFLAGS := $(foreach INCDIR,$(INCDIRS),-I $(INCDIR)) $(CPPFLAGS)
+CFLAGS := -pipe $(CFLAGS)
+LDFLAGS := -fuse-ld=mold -lm $(LDFLAGS)
 
 LIBS := glfw3
 
@@ -30,9 +33,11 @@ LDFLAGS += $(shell pkg-config --libs $(LIBS))
 endif
 endif
 
-DEBUGFLAGS ?= -g -glldb
+OWNFLAGS ?= -std=c17 -Wall -Wextra -Wpedantic
+DEBUGFLAGS ?= -g
 SANFLAGS ?= -fsanitize=undefined,address
-OPTIFLAGS ?= -flto=thin -O2
+OPTIFLAGS ?= -O2
+LTOFLAGS ?= -flto
 STATICFLAGS ?= -static
 
 ifeq ($(strip $(DEBUG)),1)
@@ -44,30 +49,38 @@ endif
 ifeq ($(strip $(OPTI)),1)
 CFLAGS += $(OPTIFLAGS)
 endif
+ifeq ($(strip $(LTO)),1)
+CFLAGS += $(LTOFLAGS)
+endif
 ifeq ($(strip $(STATIC)),1)
 LDFLAGS += $(STATICFLAGS)
 endif
 
 all: $(BIN)
 
-$(DEPDIR)/%.d: $(SRCDIR)/%.c
-	@$(MKDIR) "$(DEPDIR)"
-	@$(CC) $(CPPFLAGS) -MM "$<" | sed 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o: ,g' > "$@"
+$(BUILDDIR)/%.c.d: %.c
+	@$(MKDIR) $(@D)
+	@$(CC) $(CPPFLAGS) -MM $< | sed 's,$(*F)\.o[: ]*,$(BUILDDIR)/$<.o $(BUILDDIR)/$<.d: ,g' > $@
 
 include $(DEPS)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
-	@$(MKDIR) "$(OBJDIR)"
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c "$<" -o "$@"
+$(BUILDDIR)/$(SRCDIR)/%.c.o: $(SRCDIR)/%.c
+	@$(MKDIR) $(@D)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OWNFLAGS) -c $< -o $@
+
+$(BUILDDIR)/$(LIBDIR)/%.c.o: $(LIBDIR)/%.c
+	@$(MKDIR) $(@D)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(BIN): $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $^ -o "$@"
+	@$(MKDIR) $(@D)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(OWNFLAGS) $(LDFLAGS) $^ -o $@
 
 clean:
-	$(RM) $(OBJDIR)/*.o $(DEPDIR)/*.d $(BIN)
+	$(RM) -r $(BUILDDIR)
 
 run: $(BIN)
-	@./$(BIN) $(ARGS)
+	./$(BIN) $(ARGS)
 
 debug: $(BIN)
 	@$(DEBUGGER) ./$(BIN)

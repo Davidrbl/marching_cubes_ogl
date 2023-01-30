@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "gl.h"
+#include <glad/gl.h>
 
 void create_shader(const char* path, GLenum type, uint32_t* dest);
 
