@@ -77,7 +77,7 @@ $(BIN): $(OBJS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OWNFLAGS) $(LDFLAGS) $^ -o $@
 
 clean:
-	$(RM) -r $(BUILDDIR)
+	@$(RM) $(shell find $(BUILDDIR) -type f -name '*.o' -o -name '*.d') $(BIN)
 
 run: $(BIN)
 	./$(BIN) $(ARGS)

@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <math.h>
 
-#include <bmp_imp.h>
+#include "bmp_imp.h"
 
 void bmp_load(char* const* addresses, uint32_t num_addresses, uint8_t** bitmap, uint32_t* bmp_res){
     uint32_t insert_offset = 0;
