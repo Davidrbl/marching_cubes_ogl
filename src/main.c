@@ -20,7 +20,7 @@
 #define MOUSE_SENSITIVITY 0.001
 #define CAMERA_SPEED 1.0
 
-#define USE_CT 1
+#define USE_CT 0
 
 static void glfw_error_callback(int error, const char* desc){
     printf("GLFW_ERROR: %d ---\t %s\n", error, desc);

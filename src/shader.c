@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "shader.h"
+#include <shader.h>
 
 void create_shader(const char* path, GLenum type, uint32_t* dest) {
     *dest = glCreateShader(type);
